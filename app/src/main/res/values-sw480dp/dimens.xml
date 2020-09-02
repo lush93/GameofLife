@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="cellRight">10dp</dimen>
+    <dimen name="cellBottom">10dp</dimen>
+
+    <dimen name="rectInset">2dp</dimen>
+    <dimen name="cellAndInset">12dp</dimen>
+    <dimen name="smallRectOffset">50dp</dimen>
+
+    <dimen name="strokeWidth">2dp</dimen>
+</resources>
