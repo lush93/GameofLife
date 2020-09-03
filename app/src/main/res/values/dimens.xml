@@ -3,15 +3,10 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
-    <dimen name="cellRight">8dp</dimen>
-    <dimen name="cellBottom">8dp</dimen>
     <dimen name="cellTop">0dp</dimen>
     <dimen name="cellLeft">0dp</dimen>
+    <dimen name="cellRight">8dp</dimen>
+    <dimen name="cellBottom">8dp</dimen>
 
-    <dimen name="rectStart">0dp</dimen>
     <dimen name="rectInset">1dp</dimen>
-    <dimen name="cellAndInset">9dp</dimen>
-    <dimen name="smallRectOffset">40dp</dimen>
-
-    <dimen name="strokeWidth">4dp</dimen>
 </resources>

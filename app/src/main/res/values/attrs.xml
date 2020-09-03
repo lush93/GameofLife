@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="GameView">
+        <attr name="liveColor" format="color" />
+        <attr name="deadColor" format="color" />
+        <attr name="cellWidth" format="dimension" />
+        <attr name="cellHeight" format="dimension" />
+        <attr name="insetSize" format="dimension" />
+    </declare-styleable>
+</resources>
