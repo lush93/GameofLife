@@ -25,7 +25,7 @@
             app:liveColor="#FFEB3B"
             app:deadColor="#009688"
             app:cellWidth="20dp"
-            app:cellHeight="24dp"
+            app:cellHeight="20dp"
             app:insetSize="4dp"/>
 
         <Button

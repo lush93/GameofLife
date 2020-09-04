@@ -6,6 +6,4 @@
 
     <color name="colorDead">#000000</color>
     <color name="colorLive">#FFFFFF</color>
-    <color name="colorDeadToLive">#E6E6E6</color>
-    <color name="colorLiveToDead">#333333</color>
 </resources>

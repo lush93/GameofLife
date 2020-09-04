@@ -21,11 +21,10 @@ class GameView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
     private lateinit var extraCanvas: Canvas
     private lateinit var extraBitmap: Bitmap
+    private val map = HashMap<Pair<Float, Float>, Int>()
 
     private var deadColor = ResourcesCompat.getColor(resources, R.color.colorDead, null)
     private var liveColor = ResourcesCompat.getColor(resources, R.color.colorLive, null)
-    private val deadToLiveColor = ResourcesCompat.getColor(resources, R.color.colorDeadToLive, null)
-    private val liveToDeadColor = ResourcesCompat.getColor(resources, R.color.colorLiveToDead, null)
 
     private var motionTouchEventX = 0f
     private var motionTouchEventY = 0f
@@ -131,66 +130,47 @@ class GameView @JvmOverloads constructor(
         return true
     }
 
-    private fun neighborLiveCellCount(i: Float, j: Float): Int {
-        var count = 0
+    private fun neighborLiveCellCount(i: Float, j: Float){
         for (k in -1..1) {
             for (l in -1..1) {
-                if (k == 0 && l == 0) continue
-                val ri = (i + 1 + k * cellBlockWidth).toInt()
-                val ci = (j + 1 + l * cellBlockHeight).toInt()
+                val riCanvas = i + k * cellBlockWidth
+                val ciCanvas = j + l * cellBlockHeight
 
-                if (ri >= 0 && ri < extraBitmap.width &&
-                    ci >= 0 && ci < extraBitmap.height
+                val riBitmap = riCanvas.toInt() + 1
+                val ciBitmap = ciCanvas.toInt() + 1
+
+                if (riBitmap >= 0 && riBitmap < extraBitmap.width &&
+                    ciBitmap >= 0 && ciBitmap < extraBitmap.height
                 ) {
-                    val value = extraBitmap[ri, ci]
-                    count += when (value) {
-                        liveToDeadColor, liveColor -> 1
-                        deadToLiveColor -> 0
-                        else -> 0
-                    }
+                    val pair = Pair(riCanvas, ciCanvas)
+
+                    if(!map.containsKey(pair)) map[pair] = 0
+                    if(k != 0 || l !=0) map[pair] = map[pair]!! + 1
                 }
             }
         }
-        return count
     }
 
     fun nextState() {
+        map.clear()
+
         var i = 0F
         while (i < extraBitmap.width) {
             var j = 0F
             while (j < extraBitmap.height) {
-                val count = neighborLiveCellCount(i, j)
-
-                if (extraBitmap[i.toInt() + 1, j.toInt() + 1] == liveColor) {
-                    if (count < 2 || count > 3) {
-                        drawBackCellRectangle(extraCanvas, i, j, liveToDeadColor)
-                    }
-                } else {
-                    if (count == 3) {
-                        drawBackCellRectangle(extraCanvas, i, j, deadToLiveColor)
-                    }
-                }
+                if (extraBitmap[i.toInt() + 1, j.toInt() + 1] == liveColor)
+                    neighborLiveCellCount(i, j)
                 j += cellBlockHeight
             }
             i += cellBlockWidth
         }
 
-        i = 0F
-        while (i < extraBitmap.width) {
-            var j = 0F
-            while (j < extraBitmap.height) {
-                val value = extraBitmap[i.toInt() + 1, j.toInt() + 1]
-                if (value == liveToDeadColor) drawBackCellRectangle(extraCanvas, i, j, deadColor)
-                else if (value == deadToLiveColor) drawBackCellRectangle(
-                    extraCanvas,
-                    i,
-                    j,
-                    liveColor
-                )
-
-                j += cellBlockHeight
-            }
-            i += cellBlockWidth
+        for(cell in map){
+            val (ri ,rj) = cell.key
+            val count = cell.value
+            if(count == 3 ||(count == 2 && (extraBitmap[ri.toInt() + 1, rj.toInt() + 1] == liveColor)))
+                drawBackCellRectangle(extraCanvas, ri, rj, liveColor)
+            else drawBackCellRectangle(extraCanvas, ri, rj, deadColor)
         }
 
         invalidate()
