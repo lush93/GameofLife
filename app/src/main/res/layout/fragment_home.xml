@@ -23,10 +23,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:liveColor="#FFEB3B"
-            app:deadColor="#009688"
-            app:cellWidth="20dp"
-            app:cellHeight="20dp"
-            app:insetSize="4dp"/>
+            app:deadColor="#009688" />
 
         <Button
             android:id="@+id/startButton"

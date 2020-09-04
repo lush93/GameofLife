@@ -8,6 +8,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+/**
+ * The ViewModel for the HomeFragment.
+ *
+ */
 class HomeViewModel : ViewModel() {
     private val _stateCount = MutableLiveData<Long>().apply {
         value = 0
@@ -24,12 +28,20 @@ class HomeViewModel : ViewModel() {
     }
     val frameRate get() = _frameRate
 
+    /**
+     * Launch next state of the game
+     *
+     */
     private fun nextState(){
         viewModelScope.launch {
             nextStateSuspend()
         }
     }
 
+    /**
+     * Increment the _stateCount by one, if _isRunning is true.
+     *
+     */
     private suspend fun nextStateSuspend(){
         withContext(Dispatchers.Main) {
             while(_isRunning.value!!){
@@ -39,11 +51,19 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Start or Resume the game.
+     *
+     */
     fun start(){
         _isRunning.value = true
         nextState()
     }
 
+    /**
+     * Pause the game.
+     *
+     */
     fun pause(){
         _isRunning.value = false
     }

@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
@@ -14,6 +13,19 @@ import androidx.core.graphics.get
 import com.nogotech.gameoflife.R
 import kotlin.math.abs
 
+/**
+ * The View for the Game of Life environment.
+ *
+ * @constructor
+ * The constructor use base style when inflating.
+ *
+ * @param context The Context the view is running in, through which it can
+ *        access the current theme, resources, etc.
+ * @param attrs The attributes of the XML tag that is inflating the view.
+ * @param defStyleAttr An attribute in the current theme that contains a
+ *        reference to a style resource that supplies default values for
+ *        the view. Can be 0 to not look for defaults.
+ */
 class GameView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -57,6 +69,17 @@ class GameView @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Draw canvas with deadColor.
+     * This is called during layout when the size of this view has changed. If
+     * you were just added to the view hierarchy, you're called with the old
+     * values of 0.
+     *
+     * @param width Current width of this view.
+     * @param height Current height of this view.
+     * @param oldWidth Old width of this view.
+     * @param oldHeight Old height of this view.
+     */
     override fun onSizeChanged(width: Int, height: Int, oldWidth: Int, oldHeight: Int) {
         super.onSizeChanged(width, height, oldWidth, oldHeight)
         if (::extraBitmap.isInitialized) extraBitmap.recycle()
@@ -65,11 +88,22 @@ class GameView @JvmOverloads constructor(
         extraCanvas.drawColor(deadColor)
     }
 
+    /**
+     * Draw the cached extraBitmap onto canvas.
+     *
+     * @param canvas The canvas on which the background will be drawn
+     */
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         canvas.drawBitmap(extraBitmap, 0f, 0f, null)
     }
 
+    /**
+     * Draw a cell on the canvas.
+     *
+     * @param canvas The canvas to be drawn
+     * @param color The color for the cell
+     */
     private fun drawCellRectangle(canvas: Canvas, color: Int) {
         canvas.clipRect(
             cellRectLeft, cellRectTop,
@@ -78,6 +112,14 @@ class GameView @JvmOverloads constructor(
         canvas.drawColor(color)
     }
 
+    /**
+     * Draw a cell on the canvas at a given position.
+     *
+     * @param canvas The canvas to be drawn
+     * @param dx X position of the origin
+     * @param dy Y position of the origin
+     * @param color The color for the cell
+     */
     private fun drawBackCellRectangle(canvas: Canvas, dx: Float, dy: Float, color: Int) {
         canvas.save()
         canvas.translate(dx, dy)
@@ -85,6 +127,15 @@ class GameView @JvmOverloads constructor(
         canvas.restore()
     }
 
+    /**
+     * Draw or remove live cells on the extraBitmap during click.
+     * Call this view's OnClickListener, if it is defined.  Performs all normal
+     * actions associated with clicking: reporting accessibility event, playing
+     * a sound, etc.
+     *
+     * @return True there was an assigned OnClickListener that was called, false
+     *         otherwise is returned.
+     */
     override fun performClick(): Boolean {
         if (super.performClick()) return true
 
@@ -102,6 +153,10 @@ class GameView @JvmOverloads constructor(
         return true
     }
 
+    /**
+     * Draw or remove live cells on the extraBitmap during touch move.
+     *
+     */
     private fun touchMove() {
         var dx = abs(motionTouchEventX - currentX)
         var dy = abs(motionTouchEventY - currentY)
@@ -119,6 +174,12 @@ class GameView @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Handle touch click and touch move event.
+     *
+     * @param event MotionEvent object
+     * @return true when finish handling the event
+     */
     override fun onTouchEvent(event: MotionEvent): Boolean {
         motionTouchEventX = event.x
         motionTouchEventY = event.y
@@ -130,7 +191,13 @@ class GameView @JvmOverloads constructor(
         return true
     }
 
-    private fun neighborLiveCellCount(i: Float, j: Float){
+    /**
+     * Increment the count number by one to each neighbors of the given cell(i, j)
+     *
+     * @param i X-coordinate for the given cell
+     * @param j Y-coordinate for the given cell
+     */
+    private fun liveCellNeighborCount(i: Float, j: Float){
         for (k in -1..1) {
             for (l in -1..1) {
                 val riCanvas = i + k * cellBlockWidth
@@ -151,6 +218,10 @@ class GameView @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Update the board to the next state.
+     *
+     */
     fun nextState() {
         map.clear()
 
@@ -159,7 +230,7 @@ class GameView @JvmOverloads constructor(
             var j = 0F
             while (j < extraBitmap.height) {
                 if (extraBitmap[i.toInt() + 1, j.toInt() + 1] == liveColor)
-                    neighborLiveCellCount(i, j)
+                    liveCellNeighborCount(i, j)
                 j += cellBlockHeight
             }
             i += cellBlockWidth

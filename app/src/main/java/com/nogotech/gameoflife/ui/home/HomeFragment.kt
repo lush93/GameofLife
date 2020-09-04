@@ -14,11 +14,27 @@ import androidx.lifecycle.ViewModelProvider
 import com.nogotech.gameoflife.R
 import com.nogotech.gameoflife.databinding.FragmentHomeBinding
 
+/**
+ * The Fragment for the home view.
+ *
+ */
 class HomeFragment : Fragment() {
 
     private lateinit var homeViewModel: HomeViewModel
     private lateinit var binding: FragmentHomeBinding
 
+    /**
+     * Called to have the fragment instantiate its user interface view.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate
+     * any views in the fragment.
+     * @param container If non-null, this is the parent view that the fragment's
+     * UI should be attached to.  The fragment should not add the view itself,
+     * but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     * @return Return the View for the fragment's UI.
+     */
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
