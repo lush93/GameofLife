@@ -33,7 +33,8 @@ class GameView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
     private lateinit var extraCanvas: Canvas
     private lateinit var extraBitmap: Bitmap
-    private val map = HashMap<Pair<Float, Float>, Int>()
+    private val liveCells = mutableSetOf<Pair<Float, Float>>()
+    private val liveCellNeighbors = HashMap<Pair<Float, Float>, Int>()
 
     private var deadColor = ResourcesCompat.getColor(resources, R.color.colorDead, null)
     private var liveColor = ResourcesCompat.getColor(resources, R.color.colorLive, null)
@@ -128,6 +129,30 @@ class GameView @JvmOverloads constructor(
     }
 
     /**
+     * Draw or remove a cell to the current position
+     *
+     */
+    private fun drawOrRemoveLiveCell(){
+        currentX = motionTouchEventX
+        currentY = motionTouchEventY
+
+        val dx = currentX - (currentX % cellBlockWidth)
+        val dy = currentY - (currentY % cellBlockHeight)
+        val cell = Pair(dx, dy)
+
+        if(liveCells.contains(cell)){
+            drawBackCellRectangle(extraCanvas, dx, dy, deadColor)
+            liveCells.remove(cell)
+        }
+        else{
+            drawBackCellRectangle(extraCanvas, dx, dy, liveColor)
+            liveCells.add(cell)
+        }
+
+        invalidate()
+    }
+
+    /**
      * Draw or remove live cells on the extraBitmap during click.
      * Call this view's OnClickListener, if it is defined.  Performs all normal
      * actions associated with clicking: reporting accessibility event, playing
@@ -138,18 +163,7 @@ class GameView @JvmOverloads constructor(
      */
     override fun performClick(): Boolean {
         if (super.performClick()) return true
-
-        currentX = motionTouchEventX
-        currentY = motionTouchEventY
-
-        val dx = currentX - (currentX % cellBlockWidth)
-        val dy = currentY - (currentY % cellBlockHeight)
-
-        drawBackCellRectangle(extraCanvas, dx, dy,
-            if (extraBitmap[dx.toInt() + 1, dy.toInt() + 1] == liveColor) deadColor else liveColor)
-
-        invalidate()
-
+        drawOrRemoveLiveCell()
         return true
     }
 
@@ -158,20 +172,10 @@ class GameView @JvmOverloads constructor(
      *
      */
     private fun touchMove() {
-        var dx = abs(motionTouchEventX - currentX)
-        var dy = abs(motionTouchEventY - currentY)
-        if (dx >= touchTolerance || dy >= touchTolerance) {
-            currentX = motionTouchEventX
-            currentY = motionTouchEventY
-            // Draw in the extra bitmap to cache it.
-            dx = currentX - (currentX % cellBlockWidth)
-            dy = currentY - (currentY % cellBlockHeight)
-
-            drawBackCellRectangle(extraCanvas, dx, dy,
-                if (extraBitmap[dx.toInt() + 1, dy.toInt() +1] == liveColor) deadColor else liveColor)
-
-            invalidate()
-        }
+        val dx = abs(motionTouchEventX - currentX)
+        val dy = abs(motionTouchEventY - currentY)
+        if (dx >= touchTolerance || dy >= touchTolerance)
+            drawOrRemoveLiveCell()
     }
 
     /**
@@ -200,19 +204,16 @@ class GameView @JvmOverloads constructor(
     private fun liveCellNeighborCount(i: Float, j: Float){
         for (k in -1..1) {
             for (l in -1..1) {
-                val riCanvas = i + k * cellBlockWidth
-                val ciCanvas = j + l * cellBlockHeight
+                val ri = i + k * cellBlockWidth
+                val ci = j + l * cellBlockHeight
 
-                val riBitmap = riCanvas.toInt() + 1
-                val ciBitmap = ciCanvas.toInt() + 1
-
-                if (riBitmap >= 0 && riBitmap < extraBitmap.width &&
-                    ciBitmap >= 0 && ciBitmap < extraBitmap.height
+                if (ri >= 0 && ri < extraBitmap.width &&
+                    ci >= 0 && ci < extraBitmap.height
                 ) {
-                    val pair = Pair(riCanvas, ciCanvas)
+                    val pair = Pair(ri, ci)
 
-                    if(!map.containsKey(pair)) map[pair] = 0
-                    if(k != 0 || l !=0) map[pair] = map[pair]!! + 1
+                    if(!liveCellNeighbors.containsKey(pair)) liveCellNeighbors[pair] = 0
+                    if(k != 0 || l !=0) liveCellNeighbors[pair] = liveCellNeighbors[pair]!! + 1
                 }
             }
         }
@@ -223,25 +224,28 @@ class GameView @JvmOverloads constructor(
      *
      */
     fun nextState() {
-        map.clear()
+        liveCellNeighbors.clear()
 
-        var i = 0F
-        while (i < extraBitmap.width) {
-            var j = 0F
-            while (j < extraBitmap.height) {
-                if (extraBitmap[i.toInt() + 1, j.toInt() + 1] == liveColor)
-                    liveCellNeighborCount(i, j)
-                j += cellBlockHeight
-            }
-            i += cellBlockWidth
+        for(cell in liveCells){
+            liveCellNeighborCount(cell.first, cell.second)
         }
 
-        for(cell in map){
+        for(cell in liveCellNeighbors){
             val (ri ,rj) = cell.key
             val count = cell.value
-            if(count == 3 ||(count == 2 && (extraBitmap[ri.toInt() + 1, rj.toInt() + 1] == liveColor)))
-                drawBackCellRectangle(extraCanvas, ri, rj, liveColor)
-            else drawBackCellRectangle(extraCanvas, ri, rj, deadColor)
+            val isLiveCell = liveCells.contains(cell.key)
+            if(count == 3 ||(count == 2 && isLiveCell)){
+                if(!isLiveCell){
+                    drawBackCellRectangle(extraCanvas, ri, rj, liveColor)
+                    liveCells.add(cell.key)
+                }
+            }
+            else{
+                if(isLiveCell){
+                    drawBackCellRectangle(extraCanvas, ri, rj, deadColor)
+                    liveCells.remove(cell.key)
+                }
+            }
         }
 
         invalidate()
